@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Precision Rice Farming Intelligence — กำลังเข้าสู่ระบบ...</title>
+
+  <!-- Instant Meta Refresh Redirect -->
+  <meta http-equiv="refresh" content="0; url=home.html">
+
+  <!-- Google Fonts: Noto Sans Thai & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <script>
+    // Immediate JavaScript Redirect
+    window.location.replace("home.html");
+  </script>
+
+  <style>
+    :root {
+      --bg-darkest: #04090b;
+      --bg-panel: #0c1a1f;
+      --accent-emerald: #10b981;
+      --accent-cyan: #38bdf8;
+      --text-sub: #cbd5e1;
+      --text-muted: #829a9f;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Noto Sans Thai', 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-darkest);
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Ambient background glow */
+    .glow-sphere {
+      position: absolute;
+      width: 450px;
+      height: 450px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .redirect-card {
+      position: relative;
+      z-index: 10;
+      background: rgba(12, 26, 31, 0.85);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(16, 185, 129, 0.15);
+      border-radius: 18px;
+      padding: 2.5rem 2rem;
+      max-width: 460px;
+      width: 100%;
+      text-align: center;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .brand-icon-box {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 1.25rem;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #059669 0%, #065f46 100%);
+      border: 1px solid #34d399;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 1.85rem;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.45);
+      animation: pulseBrand 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseBrand {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(16, 185, 129, 0.45); }
+      50% { transform: scale(1.06); box-shadow: 0 0 32px rgba(52, 211, 153, 0.7); }
+    }
+
+    .system-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.35rem;
+      letter-spacing: -0.01em;
+    }
+
+    .system-sub {
+      font-size: 0.76rem;
+      color: var(--accent-cyan);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+
+    .loader-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid rgba(16, 185, 129, 0.2);
+      border-top-color: var(--accent-emerald);
+      border-radius: 50%;
+      margin: 0 auto 1rem;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .status-text {
+      font-size: 0.88rem;
+      color: var(--text-sub);
+      margin-bottom: 1.25rem;
+    }
+
+    .fallback-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .fallback-link:hover {
+      color: var(--accent-emerald);
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="glow-sphere"></div>
+
+  <div class="redirect-card">
+    <div class="brand-icon-box">
+      <i class="fa-solid fa-wheat-awn"></i>
+    </div>
+
+    <div class="system-title">Precision Rice Farming</div>
+    <div class="system-sub">Intelligence GIS &amp; AI Platform</div>
+
+    <div class="loader-spinner"></div>
+    <div class="status-text">กำลังนำท่านเข้าสู่ระบบ...</div>
+
+    <a href="home.html" class="fallback-link">
+      <span>หากไม่เปลี่ยนหน้าโดยอัตโนมัติ คลิกที่นี่</span>
+      <i class="fa-solid fa-arrow-right"></i>
+    </a>
+  </div>
+
+  <script>
+    // Fallback timer if replacement is delayed
+    setTimeout(function() {
+      window.location.href = "home.html";
+    }, 250);
+  </script>
+</body>
+</html>
