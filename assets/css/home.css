@@ -1,0 +1,61 @@
+/* Base styles & scrollbar customization */
+body {
+    font-family: 'Noto Sans Thai', sans-serif;
+    background-color: #060a12;
+    color: #f1f5f9;
+    overflow-x: hidden;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #090e17;
+}
+::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #10b981;
+}
+
+/* Glassmorphism styling helpers */
+.glass-panel {
+    background: rgba(11, 25, 40, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+    background: linear-gradient(135deg, rgba(17, 35, 56, 0.6) 0%, rgba(9, 14, 23, 0.8) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(52, 211, 153, 0.15);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+    border-color: rgba(52, 211, 153, 0.5);
+    box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.25);
+    transform: translateY(-6px);
+}
+
+/* Canvas cursor cue */
+#three-canvas-container {
+    cursor: grab;
+}
+#three-canvas-container:active {
+    cursor: grabbing;
+}
+
+/* Grid Background Pattern */
+.bg-grid-pattern {
+    background-size: 40px 40px;
+    background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+i.w-3.5.h-3.5.extracted-style-1 { transform: scale(0.9); }

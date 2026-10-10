@@ -1,0 +1,92 @@
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #090e17;
+}
+::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #10b981;
+}
+
+body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'Noto Sans Thai', sans-serif;
+    background-color: #060a12;
+    color: #f1f5f9;
+    overflow: hidden;
+}
+
+/* Fullscreen map height calculation accounting for top navbar */
+#map {
+    width: 100%;
+    height: calc(100vh - 61px);
+    background-color: #060a12;
+    z-index: 10;
+}
+
+/* Glassmorphism Panels */
+.glass-panel {
+    background: rgba(11, 25, 40, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Leaflet Controls & Popups Custom Dark Theme */
+.leaflet-bar {
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+    border-radius: 12px !important;
+    overflow: hidden;
+}
+.leaflet-bar a {
+    background-color: #0b1928 !important;
+    color: #38bdf8 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+.leaflet-bar a:hover {
+    background-color: #112338 !important;
+    color: #34d399 !important;
+}
+.leaflet-container {
+    font-family: 'Noto Sans Thai', sans-serif !important;
+}
+
+/* Leaflet Popup Styling */
+.leaflet-popup-content-wrapper {
+    background: rgba(9, 14, 23, 0.95) !important;
+    backdrop-filter: blur(12px);
+    color: #f1f5f9 !important;
+    border: 1px solid rgba(52, 211, 153, 0.3);
+    border-radius: 16px !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
+    padding: 4px;
+}
+.leaflet-popup-tip {
+    background: rgba(9, 14, 23, 0.95) !important;
+    border: 1px solid rgba(52, 211, 153, 0.3);
+}
+.leaflet-container a.leaflet-popup-close-button {
+    color: #94a3b8 !important;
+    padding: 8px 8px 0 0 !important;
+    font-size: 18px !important;
+}
+.leaflet-container a.leaflet-popup-close-button:hover {
+    color: #34d399 !important;
+}
+
+/* Pulse animation for active field selection */
+@keyframes pulse-glow {
+    0%, 100% { opacity: 0.8; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.02); }
+}
+
+i.w-3.5.h-3.5.extracted-style-1 { transform: scale(0.9); }
