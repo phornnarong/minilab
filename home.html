@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="th" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Precision Rice Farming Intelligence - เกษตรแม่นยำสูง ด้วยพลัง GIS และ AI</title>
+    
+    <!-- Google Fonts: Noto Sans Thai -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans Thai"', 'sans-serif'],
+                    },
+                    colors: {
+                        navy: {
+                            950: '#060a12',
+                            900: '#090e17',
+                            800: '#0b1928',
+                            700: '#112338',
+                        },
+                        emerald: {
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                        },
+                        cyan: {
+                            400: '#38bdf8',
+                            500: '#06b6d4',
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'scan-line': 'scan 4s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        scan: {
+                            '0%': { transform: 'translateY(-100%)' },
+                            '100%': { transform: 'translateY(100%)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Three.js Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <style>
+        /* Base styles & scrollbar customization */
+        body {
+            font-family: 'Noto Sans Thai', sans-serif;
+            background-color: #060a12;
+            color: #f1f5f9;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090e17;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #10b981;
+        }
+
+        /* Glassmorphism styling helpers */
+        .glass-panel {
+            background: rgba(11, 25, 40, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card {
+            background: linear-gradient(135deg, rgba(17, 35, 56, 0.6) 0%, rgba(9, 14, 23, 0.8) 100%);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(52, 211, 153, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(52, 211, 153, 0.5);
+            box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.25);
+            transform: translateY(-6px);
+        }
+
+        /* Canvas cursor cue */
+        #three-canvas-container {
+            cursor: grab;
+        }
+        #three-canvas-container:active {
+            cursor: grabbing;
+        }
+
+        /* Grid Background Pattern */
+        .bg-grid-pattern {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        }
+    </style>
+</head>
+<body class="bg-navy-950 text-slate-100 antialiased selection:bg-emerald-500 selection:text-white relative">
+
+    <!-- NAVIGATION BAR -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass-panel border-b border-slate-800/80 px-4 lg:px-8 py-3.5 transition-all">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <!-- Brand Logo -->
+            <a href="home.html" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-cyan-500 p-0.5 flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform">
+                    <div class="w-full h-full bg-navy-950 rounded-[10px] flex items-center justify-center">
+                        <i data-lucide="sprout" class="w-5 h-5 text-emerald-400"></i>
+                    </div>
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-slate-200 to-emerald-400 bg-clip-text text-transparent">
+                        Precision Rice
+                    </span>
+                    <span class="text-[10px] font-medium tracking-widest text-emerald-400/90 uppercase -mt-1">
+                        GIS Intelligence
+                    </span>
+                </div>
+            </a>
+
+            <!-- Navigation Links -->
+            <div class="hidden md:flex items-center gap-1 bg-navy-900/80 p-1 rounded-full border border-slate-800">
+                <a href="home.html" class="px-4 py-1.5 rounded-full text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-1.5">
+                    <i data-lucide="home" class="w-3.5 h-3.5"></i> หน้าแรก
+                </a>
+                <a href="map.html" class="px-4 py-1.5 rounded-full text-xs font-medium text-slate-300 hover:text-emerald-400 hover:bg-slate-800/50 transition-all flex items-center gap-1.5">
+                    <i data-lucide="map" class="w-3.5 h-3.5"></i> แผนที่แปลงนา
+                </a>
+                <a href="dashboard.html" class="px-4 py-1.5 rounded-full text-xs font-medium text-slate-300 hover:text-emerald-400 hover:bg-slate-800/50 transition-all flex items-center gap-1.5">
+                    <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i> แดชบอร์ด
+                </a>
+                <a href="drawtool.html" class="px-4 py-1.5 rounded-full text-xs font-medium text-slate-300 hover:text-emerald-400 hover:bg-slate-800/50 transition-all flex items-center gap-1.5">
+                    <i data-lucide="vector-polygon" class="w-3.5 h-3.5" style="transform: scale(0.9)"></i> เครื่องมือวาดแปลง
+                </a>
+                <a href="rainradar.html" class="px-4 py-1.5 rounded-full text-xs font-medium text-slate-300 hover:text-emerald-400 hover:bg-slate-800/50 transition-all flex items-center gap-1.5">
+                    <i data-lucide="cloud-rain" class="w-3.5 h-3.5"></i> เรดาร์ฝน
+                </a>
+            </div>
+
+            <!-- Header Action CTA -->
+            <div class="flex items-center gap-3">
+                <a href="map.html" class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-navy-950 bg-gradient-to-r from-emerald-400 to-cyan-400 hover:brightness-110 shadow-lg shadow-emerald-500/20 transition-all transform active:scale-95">
+                    <i data-lucide="navigation" class="w-4 h-4"></i>
+                    <span>เข้าสู่แผนที่ GIS</span>
+                </a>
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg bg-navy-900 border border-slate-800 text-slate-300 hover:text-white" aria-label="Toggle Navigation Menu">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Drawer Menu -->
+        <div id="mobile-drawer" class="hidden md:hidden pt-4 pb-2 border-t border-slate-800/80 mt-3 space-y-2">
+            <a href="home.html" class="block px-4 py-2.5 rounded-lg text-sm font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">หน้าแรก</a>
+            <a href="map.html" class="block px-4 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800">แผนที่แปลงนา</a>
+            <a href="dashboard.html" class="block px-4 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800">แดชบอร์ด</a>
+            <a href="drawtool.html" class="block px-4 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800">เครื่องมือวาดแปลง</a>
+            <a href="rainradar.html" class="block px-4 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800">เรดาร์ฝน</a>
+        </div>
+    </nav>
+
+    <!-- SECTION 1: HERO SECTION -->
+    <section class="relative min-h-screen pt-24 lg:pt-0 flex items-center justify-center overflow-hidden bg-grid-pattern">
+        <!-- Radial Glow Background Effects -->
+        <div class="absolute top-1/4 left-10 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute bottom-10 right-10 w-[500px] h-[500px] bg-cyan-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-4 lg:px-8 w-full min-h-[88vh] flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12 py-8">
+            
+            <!-- HERO LEFT COLUMN: TEXT & CTA (40% width on Desktop) -->
+            <div class="w-full lg:w-[42%] flex flex-col justify-center z-10 space-y-6 pt-6 lg:pt-0">
+                
+                <!-- System Badge -->
+                <div class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold tracking-wide w-fit backdrop-blur-md shadow-sm">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span>Smart Agriculture & GIS Intelligence Platform</span>
+                </div>
+
+                <!-- Titles & Taglines -->
+                <div class="space-y-3">
+                    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-[1.25]">
+                        <span class="block text-slate-200">Precision Rice Farming</span>
+                        <span class="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
+                            เกษตรแม่นยำสูง ด้วยพลัง GIS และ AI
+                        </span>
+                    </h1>
+                    <p class="text-sm sm:text-base text-slate-300 leading-relaxed font-light">
+                        ยกระดับการบริหารจัดการพื้นที่แปลงนาด้วยเทคโนโลยีภูมิสารสนเทศ การวิเคราะห์ดัชนีพืชพรรณ (NDVI) และแบบจำลอง AI เพื่อการเกษตรที่ยั่งยืน เพิ่มผลผลิตและแม่นยำทุกขั้นตอน
+                    </p>
+                </div>
+
+                <!-- CTA Action Buttons -->
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
+                    <a href="map.html" class="px-6 py-3.5 rounded-xl font-bold text-sm text-navy-950 bg-gradient-to-r from-emerald-400 to-cyan-400 hover:from-emerald-300 hover:to-cyan-300 shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/35 transition-all duration-300 flex items-center justify-center gap-2.5 transform hover:-translate-y-0.5">
+                        <i data-lucide="map-pin" class="w-4 h-4"></i>
+                        <span>สำรวจแผนที่</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i>
+                    </a>
+                    <a href="#modules" class="px-6 py-3.5 rounded-xl font-semibold text-sm text-slate-200 bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 hover:border-emerald-500/40 transition-all duration-300 flex items-center justify-center gap-2 backdrop-blur-md">
+                        <i data-lucide="layers" class="w-4 h-4 text-emerald-400"></i>
+                        <span>ดูความสามารถของระบบ</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
+                    </a>
+                </div>
+
+                <!-- Key Stats Ticker Bar -->
+                <div class="pt-6 border-t border-slate-800/80 grid grid-cols-3 gap-3">
+                    <div class="bg-navy-900/50 rounded-xl p-3 border border-slate-800/60 backdrop-blur-sm">
+                        <div class="text-xl font-extrabold text-emerald-400">5 จังหวัด</div>
+                        <div class="text-[11px] text-slate-400 font-medium mt-0.5">พื้นที่ศึกษาลุ่มน้ำเจ้าพระยา</div>
+                    </div>
+                    <div class="bg-navy-900/50 rounded-xl p-3 border border-slate-800/60 backdrop-blur-sm">
+                        <div class="text-xl font-extrabold text-cyan-400">120,000+</div>
+                        <div class="text-[11px] text-slate-400 font-medium mt-0.5">ไร่แปลงนาวิเคราะห์</div>
+                    </div>
+                    <div class="bg-navy-900/50 rounded-xl p-3 border border-slate-800/60 backdrop-blur-sm">
+                        <div class="text-xl font-extrabold text-emerald-400">98.4%</div>
+                        <div class="text-[11px] text-slate-400 font-medium mt-0.5">ความแม่นยำจำแนกพืช</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- HERO RIGHT COLUMN: THREE.JS 3D ISOMETRIC MAP SHOWCASE (60% width on Desktop) -->
+            <div class="w-full lg:w-[58%] h-[450px] sm:h-[520px] lg:h-[620px] relative rounded-3xl overflow-hidden glass-panel border border-slate-700/50 shadow-2xl shadow-emerald-950/40">
+                
+                <!-- 3D HUD Header Banner Overlay -->
+                <div class="absolute top-4 left-4 right-4 z-20 flex items-center justify-between pointer-events-none">
+                    <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-navy-950/80 border border-slate-700/60 backdrop-blur-md text-xs font-medium text-slate-300">
+                        <i data-lucide="box" class="w-3.5 h-3.5 text-emerald-400 animate-pulse"></i>
+                        <span>Isometric 3D Landscape Preview</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="px-2.5 py-1 rounded-md bg-navy-950/80 border border-slate-800 text-[11px] font-mono text-emerald-400">
+                            NDVI LIVE SCAN
+                        </div>
+                        <button id="reset-cam-btn" class="pointer-events-auto p-1.5 rounded-lg bg-navy-900/80 border border-slate-700/70 text-slate-300 hover:text-white hover:bg-slate-800 transition-all" title="Reset Camera View">
+                            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3D Canvas Container -->
+                <div id="three-canvas-container" class="w-full h-full relative">
+                    <!-- WebGL Canvas injected here via JS -->
+                </div>
+
+                <!-- Interactive Field Tooltip / Modal Overlay (Triggered on click) -->
+                <div id="field-modal" class="hidden absolute bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 z-30 glass-panel bg-navy-900/95 p-4 rounded-2xl border border-emerald-500/40 shadow-2xl animate-float">
+                    <div class="flex items-start justify-between pb-2 border-b border-slate-800">
+                        <div class="flex items-center gap-2">
+                            <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></div>
+                            <span id="modal-field-id" class="font-bold text-sm text-emerald-400 font-mono">SP-2026-084</span>
+                        </div>
+                        <button id="close-modal-btn" class="text-slate-400 hover:text-white p-1 rounded-md hover:bg-slate-800">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="py-2.5 space-y-2 text-xs">
+                        <div class="flex justify-between items-center text-slate-300">
+                            <span class="text-slate-400">พื้นที่ตั้ง:</span>
+                            <span id="modal-location" class="font-semibold text-white">อ.บางปลาม้า จ.สุพรรณบุรี</span>
+                        </div>
+                        <div class="flex justify-between items-center text-slate-300">
+                            <span class="text-slate-400">ขนาดแปลง:</span>
+                            <span id="modal-area" class="font-semibold text-white">18 ไร่ 2 งาน 40 ตร.ว.</span>
+                        </div>
+                        <div class="flex justify-between items-center text-slate-300">
+                            <span class="text-slate-400">พันธุ์ข้าว:</span>
+                            <span id="modal-variety" class="font-semibold text-emerald-300">กข43 (RD43)</span>
+                        </div>
+                        <div class="flex justify-between items-center text-slate-300">
+                            <span class="text-slate-400">ดัชนี NDVI:</span>
+                            <div class="flex items-center gap-1.5">
+                                <div class="w-12 bg-slate-800 rounded-full h-2 overflow-hidden border border-slate-700">
+                                    <div id="modal-ndvi-bar" class="bg-gradient-to-r from-emerald-500 to-emerald-300 h-full w-[85%]"></div>
+                                </div>
+                                <span id="modal-ndvi" class="font-mono text-emerald-400 font-bold">0.78</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center text-slate-300">
+                            <span class="text-slate-400">ความชื้นดิน:</span>
+                            <span id="modal-moisture" class="font-semibold text-cyan-300">64% (สมบูรณ์ดี)</span>
+                        </div>
+                        <div class="flex justify-between items-center text-slate-300">
+                            <span class="text-slate-400">คาดการณ์เก็บเกี่ยว:</span>
+                            <span id="modal-harvest" class="font-semibold text-amber-300">15 พ.ย. 2026</span>
+                        </div>
+                    </div>
+
+                    <a href="map.html" class="mt-2 w-full py-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors">
+                        <span>ดูในแผนที่ระบบเต็ม</span>
+                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                    </a>
+                </div>
+
+                <!-- Instruction Tooltip Footer inside 3D Box -->
+                <div class="absolute bottom-3 left-4 z-20 pointer-events-none hidden sm:flex items-center gap-2 text-[11px] text-slate-400 bg-navy-950/70 px-3 py-1 rounded-full border border-slate-800 backdrop-blur-sm">
+                    <i data-lucide="mouse-pointer-click" class="w-3 h-3 text-emerald-400"></i>
+                    <span>คลิกหมุนมุมมอง / คลิก Marker หรือแปลงนาเพื่อดูข้อมูล</span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- SECTION 2: MAIN MENU — 4 MODULES -->
+    <section id="modules" class="py-20 relative bg-navy-900/60 border-t border-b border-slate-800/80">
+        <div class="max-w-7xl mx-auto px-4 lg:px-8">
+            
+            <!-- Section Header -->
+            <div class="text-center max-w-2xl mx-auto space-y-3 mb-12">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-semibold">
+                    <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+                    <span>SYSTEM MODULES</span>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                    สำรวจความสามารถของระบบ
+                </h2>
+                <p class="text-sm text-slate-400">
+                    เลือกเครื่องมือเพื่อเริ่มต้นวิเคราะห์และบริหารจัดการข้อมูลเชิงพื้นที่แปลงนาอย่างมีประสิทธิภาพ
+                </p>
+            </div>
+
+            <!-- 4 Interactive Module Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                <!-- Card 1: แผนที่แปลงนา -->
+                <a href="map.html" class="glass-card rounded-2xl p-6 flex flex-col justify-between group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform"></div>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500 group-hover:text-navy-950 transition-colors">
+                                <i data-lucide="map-pin" class="w-6 h-6"></i>
+                            </div>
+                            <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                                Interactive GIS
+                            </span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors flex items-center gap-1.5">
+                                แผนที่แปลงนา
+                            </h3>
+                            <p class="text-xs text-slate-400 leading-relaxed mt-2">
+                                แสดงชั้นข้อมูลแปลงนาตัวอย่างจาก 5 จังหวัด พร้อมข้อมูลดัชนี NDVI และประเภทพันธุ์ข้าว
+                            </p>
+                        </div>
+                    </div>
+                    <div class="pt-6 mt-4 border-t border-slate-800/80 flex items-center justify-between text-xs font-semibold text-emerald-400 group-hover:translate-x-1 transition-transform">
+                        <span>เปิดแผนที่</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </div>
+                </a>
+
+                <!-- Card 2: แดชบอร์ด -->
+                <a href="dashboard.html" class="glass-card rounded-2xl p-6 flex flex-col justify-between group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-cyan-500/10 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform"></div>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="w-12 h-12 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 group-hover:bg-cyan-400 group-hover:text-navy-950 transition-colors">
+                                <i data-lucide="line-chart" class="w-6 h-6"></i>
+                            </div>
+                            <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
+                                AI Analytics
+                            </span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white group-hover:text-cyan-400 transition-colors flex items-center gap-1.5">
+                                แดชบอร์ด
+                            </h3>
+                            <p class="text-xs text-slate-400 leading-relaxed mt-2">
+                                วิเคราะห์สถิติ แนวโน้มการเพาะปลูก สภาพอากาศ และข้อมูลสรุปสำหรับบริหารจัดการแปลงนา
+                            </p>
+                        </div>
+                    </div>
+                    <div class="pt-6 mt-4 border-t border-slate-800/80 flex items-center justify-between text-xs font-semibold text-cyan-400 group-hover:translate-x-1 transition-transform">
+                        <span>เข้าสู่แดชบอร์ด</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </div>
+                </a>
+
+                <!-- Card 3: เครื่องมือวาดแปลง -->
+                <a href="drawtool.html" class="glass-card rounded-2xl p-6 flex flex-col justify-between group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-teal-500/10 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform"></div>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="w-12 h-12 rounded-xl bg-teal-500/20 border border-teal-500/40 flex items-center justify-center text-teal-400 group-hover:bg-teal-400 group-hover:text-navy-950 transition-colors">
+                                <i data-lucide="pentagon" class="w-6 h-6"></i>
+                            </div>
+                            <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400">
+                                Spatial Tool
+                            </span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white group-hover:text-teal-400 transition-colors flex items-center gap-1.5">
+                                เครื่องมือวาดแปลง
+                            </h3>
+                            <p class="text-xs text-slate-400 leading-relaxed mt-2">
+                                วาดขอบเขตแปลง คำนวณพื้นที่ ไร่-งาน-ตารางวา บนดาวเทียม พร้อมส่งออก GeoJSON / KML
+                            </p>
+                        </div>
+                    </div>
+                    <div class="pt-6 mt-4 border-t border-slate-800/80 flex items-center justify-between text-xs font-semibold text-teal-400 group-hover:translate-x-1 transition-transform">
+                        <span>วาดขอบเขตแปลง</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </div>
+                </a>
+
+                <!-- Card 4: เรดาร์ฝน -->
+                <a href="rainradar.html" class="glass-card rounded-2xl p-6 flex flex-col justify-between group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform"></div>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400 group-hover:bg-blue-400 group-hover:text-navy-950 transition-colors">
+                                <i data-lucide="cloud-rain" class="w-6 h-6"></i>
+                            </div>
+                            <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400">
+                                Live Monitoring
+                            </span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white group-hover:text-blue-400 transition-colors flex items-center gap-1.5">
+                                เรดาร์ฝน
+                            </h3>
+                            <p class="text-xs text-slate-400 leading-relaxed mt-2">
+                                ติดตามสถานการณ์ปริมาณฝน เรดาร์พายุ ระดับน้ำ และความจุเขื่อนสำคัญทั่วประเทศไทย
+                            </p>
+                        </div>
+                    </div>
+                    <div class="pt-6 mt-4 border-t border-slate-800/80 flex items-center justify-between text-xs font-semibold text-blue-400 group-hover:translate-x-1 transition-transform">
+                        <span>เช็คสถานการณ์ฝน</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </div>
+                </a>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- SECTION 3: PROJECT INFORMATION -->
+    <section class="py-20 relative">
+        <div class="max-w-7xl mx-auto px-4 lg:px-8">
+            <div class="glass-panel rounded-3xl p-8 lg:p-12 border border-slate-800 relative overflow-hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                    
+                    <!-- Left Details -->
+                    <div class="lg:col-span-7 space-y-6">
+                        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
+                            <i data-lucide="info" class="w-3.5 h-3.5"></i>
+                            <span>PROJECT OVERVIEW</span>
+                        </div>
+
+                        <div>
+                            <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                                Precision Rice Farming Intelligence
+                            </h2>
+                            <p class="text-sm text-slate-300 leading-relaxed mt-3">
+                                โครงการพัฒนาระบบภูมิสารสนเทศอัจฉริยะเพื่อการเกษตรแม่นยำ นำเทคโนโลยี GIS, ข้อมูลดาวเทียม Sentinel-2 และแบบจำลอง AI มาช่วยแสดงผล วิเคราะห์สุขภาพพืชพรรณ และสนับสนุนการตัดสินใจบริหารจัดการแปลงนาอย่างยั่งยืน
+                            </p>
+                        </div>
+
+                        <!-- Target Study Provinces -->
+                        <div class="space-y-3 pt-2">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                                <i data-lucide="map-pin" class="w-3.5 h-3.5 text-emerald-400"></i>
+                                พื้นที่ศึกษา 5 จังหวัดเป้าหมาย (ลุ่มน้ำเจ้าพระยา)
+                            </h4>
+                            <div class="flex flex-wrap gap-2.5">
+                                <div class="px-3.5 py-2 rounded-xl bg-navy-900 border border-slate-700/80 text-xs font-semibold text-slate-200 flex items-center gap-2 hover:border-emerald-500/50 transition-colors">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                    <span>สุพรรณบุรี (Suphan Buri)</span>
+                                </div>
+                                <div class="px-3.5 py-2 rounded-xl bg-navy-900 border border-slate-700/80 text-xs font-semibold text-slate-200 flex items-center gap-2 hover:border-emerald-500/50 transition-colors">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                    <span>นครปฐม (Nakhon Pathom)</span>
+                                </div>
+                                <div class="px-3.5 py-2 rounded-xl bg-navy-900 border border-slate-700/80 text-xs font-semibold text-slate-200 flex items-center gap-2 hover:border-emerald-500/50 transition-colors">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                    <span>พระนครศรีอยุธยา (Ayutthaya)</span>
+                                </div>
+                                <div class="px-3.5 py-2 rounded-xl bg-navy-900 border border-slate-700/80 text-xs font-semibold text-slate-200 flex items-center gap-2 hover:border-emerald-500/50 transition-colors">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                    <span>ชัยนาท (Chai Nat)</span>
+                                </div>
+                                <div class="px-3.5 py-2 rounded-xl bg-navy-900 border border-slate-700/80 text-xs font-semibold text-slate-200 flex items-center gap-2 hover:border-emerald-500/50 transition-colors">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                    <span>สิงห์บุรี (Sing Buri)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Right Feature Pills -->
+                    <div class="lg:col-span-5 bg-navy-900/80 rounded-2xl p-6 border border-slate-800 space-y-4">
+                        <h4 class="text-sm font-bold text-white border-b border-slate-800 pb-3 flex items-center gap-2">
+                            <i data-lucide="cpu" class="w-4 h-4 text-cyan-400"></i>
+                            เทคโนโลยีหลักที่ใช้งาน
+                        </h4>
+                        
+                        <div class="space-y-3 text-xs text-slate-300">
+                            <div class="flex items-start gap-3">
+                                <div class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 mt-0.5">
+                                    <i data-lucide="satellite" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <div class="font-bold text-white">Sentinel-2 Satellite Data</div>
+                                    <div class="text-slate-400 mt-0.5">ภาพถ่ายดาวเทียมสำรวจทรัพยากร ความละเอียด 10 เมตร ทุก 5 วัน</div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-3">
+                                <div class="p-2 rounded-lg bg-cyan-500/10 text-cyan-400 mt-0.5">
+                                    <i data-lucide="activity" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <div class="font-bold text-white">NDVI & EVI Vegetation Index</div>
+                                    <div class="text-slate-400 mt-0.5">การคำนวณดัชนีพืชพรรณเพื่อตรวจวัดความสมบูรณ์และระยะเจริญเติบโต</div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-3">
+                                <div class="p-2 rounded-lg bg-amber-500/10 text-amber-400 mt-0.5">
+                                    <i data-lucide="brain-circuit" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <div class="font-bold text-white">AI Yield Estimation</div>
+                                    <div class="text-slate-400 mt-0.5">แบบจำลองปัญญาประดิษฐ์ประเมินผลผลิตล่วงหน้าก่อนการเก็บเกี่ยว</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-navy-950 border-t border-slate-800/80 py-10 text-slate-400 text-xs">
+        <div class="max-w-7xl mx-auto px-4 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+                    <i data-lucide="sprout" class="w-4 h-4"></i>
+                </div>
+                <div>
+                    <div class="font-bold text-white">Precision Rice Farming Intelligence</div>
+                    <div class="text-[11px] text-slate-500">© 2026 Smart Agriculture & GIS Platform. All rights reserved.</div>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-6 text-slate-400">
+                <a href="map.html" class="hover:text-emerald-400 transition-colors">แผนที่</a>
+                <a href="dashboard.html" class="hover:text-emerald-400 transition-colors">แดชบอร์ด</a>
+                <a href="drawtool.html" class="hover:text-emerald-400 transition-colors">เครื่องมือวาด</a>
+                <a href="rainradar.html" class="hover:text-emerald-400 transition-colors">เรดาร์ฝน</a>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <span class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-[10px] font-mono text-slate-400">Three.js 3D</span>
+                <span class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-[10px] font-mono text-slate-400">GIS Engine</span>
+                <span class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-[10px] font-mono text-slate-400">AI Model</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Mobile menu toggle logic
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileDrawer = document.getElementById('mobile-drawer');
+        if (mobileMenuBtn && mobileDrawer) {
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileDrawer.classList.toggle('hidden');
+            });
+        }
+
+        // =========================================================================
+        // THREE.JS ISOMETRIC 3D AGRICULTURAL MAP SHOWCASE ENGINE
+        // =========================================================================
+
+        const container = document.getElementById('three-canvas-container');
+        let scene, camera, renderer, controls;
+        let fieldMeshes = [];
+        let markerGroup, scanPlane, particles;
+        let raycaster, mouse;
+        let animFrameId;
+
+        // Mock Field Metadata for Interactive Raycaster Click
+        const mockFieldsData = [
+            { id: "SP-2026-084", location: "อ.บางปลาม้า จ.สุพรรณบุรี", area: "18 ไร่ 2 งาน", variety: "กข43 (RD43)", ndvi: 0.78, moisture: "64%", harvest: "15 พ.ย. 2026" },
+            { id: "NP-2026-112", location: "อ.กำแพงแสน จ.นครปฐม", area: "24 ไร่ 1 งาน", variety: "หอมปทุม", ndvi: 0.85, moisture: "72%", harvest: "02 ธ.ค. 2026" },
+            { id: "AY-2026-045", location: "อ.เสนา จ.พระนครศรีอยุธยา", area: "12 ไร่ 3 งาน", variety: "กข79", ndvi: 0.65, moisture: "58%", harvest: "20 พ.ย. 2026" },
+            { id: "CN-2026-019", location: "อ.สรรคบุรี จ.ชัยนาท", area: "30 ไร่ 0 งาน", variety: "ข้าวขาวดอกมะลิ 105", ndvi: 0.82, moisture: "68%", harvest: "28 พ.ย. 2026" },
+            { id: "SB-2026-056", location: "อ.อินทร์บุรี จ.สิงห์บุรี", area: "15 ไร่ 2 งาน", variety: "กข85", ndvi: 0.73, moisture: "61%", harvest: "10 ธ.ค. 2026" }
+        ];
+
+        function init3DScene() {
+            if (!container) return;
+
+            // 1. Scene Setup
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x060a12);
+            scene.fog = new THREE.FogExp2(0x060a12, 0.018);
+
+            // 2. Isometric Camera Setup
+            const aspect = container.clientWidth / container.clientHeight;
+            camera = new THREE.PerspectiveCamera(38, aspect, 0.1, 1000);
+            const initialCamPos = new THREE.Vector3(32, 28, 32);
+            camera.position.copy(initialCamPos);
+            camera.lookAt(0, 0, 0);
+
+            // 3. WebGL Renderer Setup (Safe Context Creation)
+            try {
+                const testCanvas = document.createElement('canvas');
+                const gl = testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl');
+                if (!gl) {
+                    showWebGLFallback();
+                    return;
+                }
+                renderer = new THREE.WebGLRenderer({ 
+                    antialias: true, 
+                    alpha: true, 
+                    powerPreference: "default",
+                    failIfMajorPerformanceCaveat: false
+                });
+            } catch (e) {
+                console.warn("WebGL Renderer context creation failed, rendering fallback UI:", e);
+                showWebGLFallback();
+                return;
+            }
+
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            container.appendChild(renderer.domElement);
+
+            // 4. Orbit Controls
+            if (typeof THREE.OrbitControls !== 'undefined') {
+                controls = new THREE.OrbitControls(camera, renderer.domElement);
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.05;
+                controls.maxPolarAngle = Math.PI / 2.1; // Limit below ground view
+                controls.minDistance = 20;
+                controls.maxDistance = 70;
+            }
+
+            // 5. Lighting System
+            const ambientLight = new THREE.AmbientLight(0x112233, 1.8);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0x34d399, 1.2);
+            dirLight.position.set(20, 40, 20);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 1024;
+            dirLight.shadow.mapSize.height = 1024;
+            scene.add(dirLight);
+
+            const cyanLight = new THREE.PointLight(0x06b6d4, 1.5, 50);
+            cyanLight.position.set(-15, 10, -15);
+            scene.add(cyanLight);
+
+            // 6. Terrain Mesh (Undulating Height displacement)
+            const terrainGeo = new THREE.PlaneGeometry(50, 50, 60, 60);
+            terrainGeo.rotateX(-Math.PI / 2);
+
+            const posAttr = terrainGeo.attributes.position;
+            for (let i = 0; i < posAttr.count; i++) {
+                const x = posAttr.getX(i);
+                const z = posAttr.getZ(i);
+                // Gentle elevation formula
+                const y = Math.sin(x * 0.12) * 0.7 + Math.cos(z * 0.12) * 0.7 + Math.sin((x + z) * 0.08) * 0.5;
+                posAttr.setY(i, y);
+            }
+            terrainGeo.computeVertexNormals();
+
+            const terrainMat = new THREE.MeshStandardMaterial({
+                color: 0x0a1c18,
+                roughness: 0.85,
+                metalness: 0.1,
+                flatShading: true
+            });
+            const terrain = new THREE.Mesh(terrainGeo, terrainMat);
+            terrain.receiveShadow = true;
+            scene.add(terrain);
+
+            // Grid outline wireframe on ground
+            const gridHelper = new THREE.GridHelper(50, 50, 0x10b981, 0x1e293b);
+            gridHelper.position.y = 0.02;
+            scene.add(gridHelper);
+
+            // 7. Winding Blue Irrigation Canal River
+            const riverCurve = new THREE.CatmullRomCurve3([
+                new THREE.Vector3(-25, 0.2, -15),
+                new THREE.Vector3(-10, 0.2, -8),
+                new THREE.Vector3(0, 0.2, 5),
+                new THREE.Vector3(12, 0.2, 10),
+                new THREE.Vector3(25, 0.2, 20)
+            ]);
+            const riverGeo = new THREE.TubeGeometry(riverCurve, 40, 1.2, 8, false);
+            const riverMat = new THREE.MeshStandardMaterial({
+                color: 0x0284c7,
+                emissive: 0x0369a1,
+                emissiveIntensity: 0.6,
+                roughness: 0.2,
+                transparent: true,
+                opacity: 0.85
+            });
+            const river = new THREE.Mesh(riverGeo, riverMat);
+            scene.add(river);
+
+            // 8. Paddy Field Polygons with dynamic NDVI vegetation health shades
+            const fieldCoords = [
+                { x: -12, z: -12, w: 8, h: 7, color: 0x10b981, ndviIndex: 0 },
+                { x: -3, z: -14, w: 7, h: 6, color: 0x34d399, ndviIndex: 1 },
+                { x: 6, z: -10, w: 9, h: 8, color: 0x84cc16, ndviIndex: 2 },
+                { x: -15, z: 2, w: 7, h: 9, color: 0x10b981, ndviIndex: 3 },
+                { x: -6, z: 8, w: 8, h: 8, color: 0x34d399, ndviIndex: 4 },
+                { x: 8, z: 2, w: 10, h: 7, color: 0xa3e635, ndviIndex: 0 },
+                { x: 15, z: -12, w: 7, h: 7, color: 0x10b981, ndviIndex: 1 },
+                { x: -18, z: -2, w: 6, h: 6, color: 0xfacc15, ndviIndex: 2 },
+                { x: 12, z: 12, w: 8, h: 8, color: 0x34d399, ndviIndex: 3 },
+            ];
+
+            fieldCoords.forEach((field, idx) => {
+                const shape = new THREE.Shape();
+                const halfW = field.w / 2;
+                const halfH = field.h / 2;
+
+                // Organic polygon shape offset
+                shape.moveTo(-halfW, -halfH);
+                shape.lineTo(halfW - 0.5, -halfH + 0.3);
+                shape.lineTo(halfW + 0.2, halfH - 0.4);
+                shape.lineTo(-halfW + 0.4, halfH);
+                shape.closePath();
+
+                const extrudeSettings = { depth: 0.3, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: 0.1, bevelThickness: 0.1 };
+                const fieldGeo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+                fieldGeo.rotateX(-Math.PI / 2);
+
+                const fieldMat = new THREE.MeshStandardMaterial({
+                    color: field.color,
+                    roughness: 0.6,
+                    metalness: 0.2,
+                    emissive: field.color,
+                    emissiveIntensity: 0.15
+                });
+
+                const fieldMesh = new THREE.Mesh(fieldGeo, fieldMat);
+                fieldMesh.position.set(field.x, 0.4, field.z);
+                fieldMesh.castShadow = true;
+                fieldMesh.receiveShadow = true;
+                fieldMesh.userData = { ...mockFieldsData[field.ndviIndex], meshIndex: idx };
+
+                // Glowing polygon border line
+                const edges = new THREE.EdgesGeometry(fieldGeo);
+                const lineMat = new THREE.LineBasicMaterial({ color: 0x34d399, linewidth: 2 });
+                const wireframe = new THREE.LineSegments(edges, lineMat);
+                fieldMesh.add(wireframe);
+
+                scene.add(fieldMesh);
+                fieldMeshes.push(fieldMesh);
+            });
+
+            // 9. Scatter Low-Poly Trees
+            const treeGeo = new THREE.ConeGeometry(0.8, 2, 5);
+            const treeMat = new THREE.MeshStandardMaterial({ color: 0x059669, roughness: 0.9 });
+            const trunkGeo = new THREE.CylinderGeometry(0.15, 0.2, 0.8, 5);
+            const trunkMat = new THREE.MeshStandardMaterial({ color: 0x78350f });
+
+            for (let i = 0; i < 25; i++) {
+                const tx = (Math.random() - 0.5) * 42;
+                const tz = (Math.random() - 0.5) * 42;
+                
+                const treeGroup = new THREE.Group();
+                const foliage = new THREE.Mesh(treeGeo, treeMat);
+                foliage.position.y = 1.2;
+                foliage.castShadow = true;
+
+                const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+                trunk.position.y = 0.4;
+
+                treeGroup.add(foliage);
+                treeGroup.add(trunk);
+                treeGroup.position.set(tx, 0.3, tz);
+                scene.add(treeGroup);
+            }
+
+            // 10. Floating 3D GIS Markers with Pulsing Beams
+            markerGroup = new THREE.Group();
+            const keyMarkerPositions = [
+                { x: -12, z: -12, dataIdx: 0 },
+                { x: -3, z: -14, dataIdx: 1 },
+                { x: 6, z: -10, dataIdx: 2 },
+                { x: -6, z: 8, dataIdx: 3 },
+                { x: 12, z: 12, dataIdx: 4 }
+            ];
+
+            keyMarkerPositions.forEach((pos) => {
+                const mGroup = new THREE.Group();
+                mGroup.position.set(pos.x, 3.5, pos.z);
+
+                // Floating Pin Mesh
+                const pinGeo = new THREE.OctahedronGeometry(0.7, 0);
+                const pinMat = new THREE.MeshStandardMaterial({
+                    color: 0x38bdf8,
+                    emissive: 0x06b6d4,
+                    emissiveIntensity: 0.8,
+                    metalness: 0.8,
+                    roughness: 0.2
+                });
+                const pin = new THREE.Mesh(pinGeo, pinMat);
+                mGroup.add(pin);
+
+                // Vertical Light Beam
+                const beamGeo = new THREE.CylinderGeometry(0.08, 0.08, 3.5, 8);
+                const beamMat = new THREE.MeshBasicMaterial({
+                    color: 0x34d399,
+                    transparent: true,
+                    opacity: 0.5
+                });
+                const beam = new THREE.Mesh(beamGeo, beamMat);
+                beam.position.y = -1.75;
+                mGroup.add(beam);
+
+                // Pulsing Ground Ring
+                const ringGeo = new THREE.RingGeometry(0.8, 1.1, 16);
+                ringGeo.rotateX(-Math.PI / 2);
+                const ringMat = new THREE.MeshBasicMaterial({
+                    color: 0x34d399,
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                const ring = new THREE.Mesh(ringGeo, ringMat);
+                ring.position.y = -3.4;
+                mGroup.add(ring);
+
+                mGroup.userData = mockFieldsData[pos.dataIdx];
+                markerGroup.add(mGroup);
+            });
+            scene.add(markerGroup);
+
+            // 11. Animated Laser Scan Plane
+            const scanGeo = new THREE.BoxGeometry(0.2, 10, 50);
+            const scanMat = new THREE.MeshBasicMaterial({
+                color: 0x34d399,
+                transparent: true,
+                opacity: 0.25,
+                depthWrite: false
+            });
+            scanPlane = new THREE.Mesh(scanGeo, scanMat);
+            scanPlane.position.set(-25, 2, 0);
+            scene.add(scanPlane);
+
+            // 12. Floating Atmospheric Particles
+            const pCount = 180;
+            const pGeo = new THREE.BufferGeometry();
+            const pPos = new Float32Array(pCount * 3);
+            for (let i = 0; i < pCount * 3; i += 3) {
+                pPos[i] = (Math.random() - 0.5) * 50;
+                pPos[i + 1] = Math.random() * 15;
+                pPos[i + 2] = (Math.random() - 0.5) * 50;
+            }
+            pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+            const pMat = new THREE.PointsMaterial({
+                color: 0x34d399,
+                size: 0.25,
+                transparent: true,
+                opacity: 0.6
+            });
+            particles = new THREE.Points(pGeo, pMat);
+            scene.add(particles);
+
+            // 13. Raycasting setup for mouse interactivity
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            // Register Event Listeners
+            window.addEventListener('resize', onWindowResize);
+            renderer.domElement.addEventListener('click', onCanvasClick);
+
+            // Check reduced motion preference
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (!prefersReducedMotion) {
+                animateScene();
+            } else {
+                renderer.render(scene, camera);
+            }
+        }
+
+        let clock = new THREE.Clock();
+
+        function animateScene() {
+            animFrameId = requestAnimationFrame(animateScene);
+
+            const elapsedTime = clock.getElapsedTime();
+
+            // Controls update
+            if (controls) controls.update();
+
+            // Slow Orbit Scene Rotation if user is not interacting
+            if (controls && !controls.state == -1) {
+                scene.rotation.y = elapsedTime * 0.03;
+            } else {
+                scene.rotation.y = elapsedTime * 0.02;
+            }
+
+            // Animate Scan Light Plane
+            scanPlane.position.x = ((elapsedTime * 6) % 50) - 25;
+
+            // Animate GIS Marker Bobbing & Rotation
+            if (markerGroup) {
+                markerGroup.children.forEach((m, idx) => {
+                    m.children[0].rotation.y = elapsedTime * 2;
+                    m.children[0].position.y = Math.sin(elapsedTime * 2.5 + idx) * 0.3;
+                });
+            }
+
+            // Drifting Particles
+            if (particles) {
+                particles.rotation.y = elapsedTime * 0.01;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // Handle Canvas Clicks & Field Selection
+        function onCanvasClick(event) {
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / container.clientHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+
+            // Check field meshes click
+            const intersects = raycaster.intersectObjects([...fieldMeshes, ...markerGroup.children], true);
+
+            if (intersects.length > 0) {
+                let hitObj = intersects[0].object;
+                while (hitObj.parent && hitObj.parent !== scene && !hitObj.userData.id) {
+                    hitObj = hitObj.parent;
+                }
+
+                if (hitObj.userData && hitObj.userData.id) {
+                    showFieldModal(hitObj.userData);
+                }
+            }
+        }
+
+        // Show Modal Tooltip with Field Details
+        function showFieldModal(data) {
+            const modal = document.getElementById('field-modal');
+            if (!modal) return;
+
+            document.getElementById('modal-field-id').innerText = data.id;
+            document.getElementById('modal-location').innerText = data.location;
+            document.getElementById('modal-area').innerText = data.area;
+            document.getElementById('modal-variety').innerText = data.variety;
+            document.getElementById('modal-ndvi').innerText = data.ndvi;
+            document.getElementById('modal-moisture').innerText = data.moisture;
+            document.getElementById('modal-harvest').innerText = data.harvest;
+            
+            const ndviBar = document.getElementById('modal-ndvi-bar');
+            if (ndviBar) {
+                ndviBar.style.width = (data.ndvi * 100) + '%';
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        // Modal Close Button
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', () => {
+                document.getElementById('field-modal').classList.add('hidden');
+            });
+        }
+
+        // Camera Reset Button
+        const resetCamBtn = document.getElementById('reset-cam-btn');
+        if (resetCamBtn) {
+            resetCamBtn.addEventListener('click', () => {
+                if (camera && controls) {
+                    camera.position.set(32, 28, 32);
+                    controls.target.set(0, 0, 0);
+                    controls.update();
+                }
+            });
+        }
+
+        // Handle Window Resize
+        function onWindowResize() {
+            if (!container || !camera || !renderer) return;
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        window.addEventListener('load', () => {
+            try {
+                // Test actual WebGL context creation capability
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                if (gl && gl instanceof WebGLRenderingContext) {
+                    init3DScene();
+                } else {
+                    showWebGLFallback();
+                }
+            } catch (err) {
+                console.warn("WebGL initialization failed, loading fallback graphic:", err);
+                showWebGLFallback();
+            }
+        });
+
+        function showWebGLFallback() {
+            if (!container) return;
+            container.innerHTML = `
+                <div class="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-navy-900/90 rounded-2xl border border-slate-800">
+                    <div class="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-4">
+                        <i data-lucide="map" class="w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">Precision GIS Visualizer</h3>
+                    <p class="text-xs text-slate-400 max-w-sm mt-2">
+                        แสดงข้อมูลภูมิสารสนเทศจำลองของแปลงนา 5 จังหวัดในระบบ สามารถเข้าชมผ่านระบบแผนที่หลักได้
+                    </p>
+                    <a href="map.html" class="mt-4 px-5 py-2.5 rounded-xl bg-emerald-500 text-navy-950 font-bold text-xs hover:bg-emerald-400 transition-colors">
+                        เข้าสู่แผนที่ interactive
+                    </a>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
